@@ -5,7 +5,7 @@ namespace Market.Identity.Domain.Entities;
 public class User : AuditableEntity
 {
     public string Email { get; set; }
-    public string UserName { get; set; }
+    public string Username { get; set; }
     public string FullName { get; set; }
     public string CallSign { get; set; }
     public string PasswordHash { get; set; }
