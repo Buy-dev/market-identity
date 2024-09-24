@@ -1,6 +1,6 @@
 namespace Market.Identity.Application;
 
-public enum Role
+public enum Roles
 {
     Admin,
     Seller,

@@ -1,8 +1,9 @@
+using Market.Identity.Domain.Entities.Common;
+
 namespace Market.Identity.Domain.Entities;
 
-public class RefreshToken
+public class RefreshToken : BaseEntity
 {
-    public Guid Id { get; set; }
     public string Token { get; set; }
     public DateTime Expires { get; set; }
     public bool IsRevoked { get; set; }
