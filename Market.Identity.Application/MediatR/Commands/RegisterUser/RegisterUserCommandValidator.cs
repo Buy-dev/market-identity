@@ -32,11 +32,15 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
 
     private Task<bool> BeUniqueUsername(string username, CancellationToken cancellationToken)
     {
-        return  _context.Users.AllAsync(u => u.Username != username, cancellationToken);
+        return  _context.Users
+                        .AsNoTracking()
+                        .AllAsync(u => u.Username != username, cancellationToken);
     }
 
     private Task<bool> BeUniqueEmail(string email, CancellationToken cancellationToken)
     {
-        return  _context.Users.AllAsync(u => u.Email != email, cancellationToken);
+        return  _context.Users
+                        .AsNoTracking()
+                        .AllAsync(u => u.Email != email, cancellationToken);
     }
 }

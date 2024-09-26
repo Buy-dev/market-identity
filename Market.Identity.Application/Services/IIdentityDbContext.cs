@@ -10,5 +10,5 @@ public interface IIdentityDbContext
     public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     
-    public Task<Result<object>> SaveAsync(CancellationToken cancellationToken = default);
+    public Task<bool> SaveAsync(CancellationToken cancellationToken = default);
 }

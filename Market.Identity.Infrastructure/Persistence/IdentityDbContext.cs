@@ -16,7 +16,7 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : Db
     public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     
-    public async Task<Result<object>> SaveAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> SaveAsync(CancellationToken cancellationToken = default)
     {
         var userId = Guid.Empty;
         var httpContextAccessor = this.GetService<IHttpContextAccessor>();
@@ -46,11 +46,11 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : Db
         try
         {
             await base.SaveChangesAsync(cancellationToken);
-            return Result<object>.Success();
+            return true;
         }
-        catch (Exception ex)
+        catch
         {
-            return Result<object>.Failure(ex.Message);
+            return false;
         }
     }
     

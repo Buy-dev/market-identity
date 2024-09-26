@@ -16,18 +16,12 @@ public class RegisterUserCommand : IRequest<Result<object>>
 }
 
 public class RegisterUserCommandHandler(IIdentityDbContext context,
-                                        RegisterUserCommandValidator validator,
                                         IPasswordHasher<User> passwordHasher, 
                                         IEmailService emailService) 
     : IRequestHandler<RegisterUserCommand, Result<object>>
 {
     public async Task<Result<object>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        var validationResult = await validator.ValidateAsync(request, cancellationToken);
-        
-        if(!validationResult.IsValid)
-            return Result<object>.Failure(validationResult.Errors);
-        
         var existingUser = await context.Users
             .FirstOrDefaultAsync(x => x.Email == request.Email || x.Username == request.Username, cancellationToken);
         
@@ -44,7 +38,10 @@ public class RegisterUserCommandHandler(IIdentityDbContext context,
         };
 
         context.Users.Add(user);
-        await context.SaveChangesAsync(cancellationToken);
+        var saveResult = await context.SaveAsync(cancellationToken);
+        
+        if(!saveResult)
+            return Result<object>.Failure("Не удалось создать пользователя");
 
         // Send email confirmation
         var confirmationToken = GenerateEmailConfirmationToken(user);
