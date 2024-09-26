@@ -4,6 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <RootNamespace>Market.Identity.Infrastructure</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -16,6 +17,12 @@
       <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
       <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.8" />
       <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Npgsql.EntityFrameworkCore.PostgreSQL">
+        <HintPath>..\..\..\..\.nuget\packages\npgsql.entityframeworkcore.postgresql\8.0.4\lib\net8.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

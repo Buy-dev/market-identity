@@ -8,12 +8,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Market.Identity.Infrastucture\Market.Identity.Infrastucture.csproj" />
+      <ProjectReference Include="..\Market.Identity.Application\Market.Identity.Application.csproj" />
+      <ProjectReference Include="..\Market.Identity.Infrastructure\Market.Identity.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>

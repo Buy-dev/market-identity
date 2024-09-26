@@ -2,5 +2,5 @@ namespace Market.Identity.Domain.Entities.Common;
 
 public class BaseEntity
 {
-    public Guid Id { get; set; }
+    public long Id { get; set; }
 }

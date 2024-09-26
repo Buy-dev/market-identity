@@ -6,7 +6,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Market.Identity.Application
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Market.Identity.Domain", "Market.Identity.Domain\Market.Identity.Domain.csproj", "{F81B2E85-3321-4A94-AC27-29C64561E706}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Market.Identity.Infrastucture", "Market.Identity.Infrastucture\Market.Identity.Infrastucture.csproj", "{F9415A0B-F6AF-47CF-8486-CEF7C62C62BB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Market.Identity.Infrastructure", "Market.Identity.Infrastructure\Market.Identity.Infrastructure.csproj", "{F9415A0B-F6AF-47CF-8486-CEF7C62C62BB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

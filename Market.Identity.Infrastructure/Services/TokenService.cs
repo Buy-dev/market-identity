@@ -2,14 +2,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Market.Identity.Application.Dtos;
 using Market.Identity.Application.Repositories;
 using Market.Identity.Application.Services;
 using Market.Identity.Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Market.Identity.Infrastucture.Services;
+namespace Market.Identity.Infrastructure.Services;
 
 public class TokenService(
     IUserRepository userRepository,

@@ -15,13 +15,19 @@ public class RegisterUserCommand : IRequest<Result<object>>
     public string Password { get; set; }
 }
 
-public class RegisterUserCommandHandler(IIdentityDbContext context, 
+public class RegisterUserCommandHandler(IIdentityDbContext context,
+                                        RegisterUserCommandValidator validator,
                                         IPasswordHasher<User> passwordHasher, 
                                         IEmailService emailService) 
     : IRequestHandler<RegisterUserCommand, Result<object>>
 {
     public async Task<Result<object>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+        
+        if(!validationResult.IsValid)
+            return Result<object>.Failure(validationResult.Errors);
+        
         var existingUser = await context.Users
             .FirstOrDefaultAsync(x => x.Email == request.Email || x.Username == request.Username, cancellationToken);
         

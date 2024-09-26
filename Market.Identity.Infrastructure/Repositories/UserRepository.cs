@@ -1,9 +1,9 @@
 using Market.Identity.Application.Services;
 using Market.Identity.Domain.Entities;
-using Market.Identity.Infrastucture.Persistence;
+using Market.Identity.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Market.Identity.Infrastucture.Repositories;
+namespace Market.Identity.Infrastructure.Repositories;
 
 public class UserRepository(IdentityDbContext context) : IUserRepository
 {

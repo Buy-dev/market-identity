@@ -1,5 +1,5 @@
-using Market.Identity.Infrastucture.Persistence;
-using Microsoft.EntityFrameworkCore;
+using Market.Identity.Application;
+using Market.Identity.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,9 +10,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<IdentityDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("IdentityDbConnection")));
-
+builder.Services.AddApplication()
+    .AddInfrastructure(builder.Configuration);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
