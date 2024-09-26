@@ -25,14 +25,11 @@ public class LoginUserCommandHandler(
                          .Users
                          .FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
         if (user == null)
-        {
             return Result<TokenResponse>.Failure("Не существует пользователя с таким email");
-        }
         
-        if (passwordHasher.VerifyHashedPassword(null, user.PasswordHash, request.Password) == PasswordVerificationResult.Failed)
-        {
+        var hashingResult = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+        if (hashingResult == PasswordVerificationResult.Failed)
             return Result<TokenResponse>.Failure("Неверный пароль");
-        }
 
         // Generate access and refresh tokens
         var tokens = tokenService.GenerateTokens(user);

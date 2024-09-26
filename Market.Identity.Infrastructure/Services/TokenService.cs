@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Market.Identity.Application.Dtos;
 using Market.Identity.Application.Repositories;
 using Market.Identity.Application.Services;
 using Market.Identity.Domain.Entities;
@@ -18,7 +19,7 @@ public class TokenService(
 {
     private readonly string _secretKey = config["Jwt:Key"]!; // Secret for Access Token
 
-    public async Task<AuthResponseDto> GenerateTokensAsync(User user)
+    public async Task<TokenResponse> GenerateTokens(User user)
     {
         var accessToken = GenerateAccessToken(user);
 
@@ -34,11 +35,7 @@ public class TokenService(
 
         await refreshTokenRepository.AddAsync(refreshTokenEntity);
 
-        return new AuthResponseDto
-        {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken
-        };
+        return new TokenResponse(accessToken, refreshToken);
     }
 
     public async Task<AuthResponseDto?> RefreshTokensAsync(string accessToken, string refreshToken)
@@ -68,7 +65,7 @@ public class TokenService(
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity([
-                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Email, user.Email)
             ]),
             Expires = DateTime.UtcNow.AddMinutes(15), // Access token valid for 15 minutes

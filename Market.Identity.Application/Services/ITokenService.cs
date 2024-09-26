@@ -5,6 +5,5 @@ namespace Market.Identity.Application.Services;
 
 public interface ITokenService
 {
-    Task<AuthResponseDto> GenerateTokensAsync(User user);
-    Task<AuthResponseDto?> RefreshTokensAsync(string accessToken, string refreshToken);
+    Task<TokenResponse> GenerateTokens(User user);
 }
