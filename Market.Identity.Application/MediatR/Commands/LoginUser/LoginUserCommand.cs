@@ -9,7 +9,7 @@ namespace Market.Identity.Application.MediatR.Commands.LoginUser;
 
 public class LoginUserCommand : IRequest<Result<TokenResponse>>
 {
-    public string Email { get; set; }
+    public string Username { get; set; }
     public string Password { get; set; }
 }
 
@@ -22,8 +22,8 @@ public class LoginUserCommandHandler(
     public async Task<Result<TokenResponse>> Handle(LoginUserCommand request, CancellationToken cancellationToken)
     {
         var user = await context
-                         .Users
-                         .FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
+                         .Users.AsNoTracking()
+                         .FirstOrDefaultAsync(u => u.Username == request.Username, cancellationToken);
         if (user == null)
             return Result<TokenResponse>.Failure("Не существует пользователя с таким email");
         
@@ -31,9 +31,8 @@ public class LoginUserCommandHandler(
         if (hashingResult == PasswordVerificationResult.Failed)
             return Result<TokenResponse>.Failure("Неверный пароль");
 
-        // Generate access and refresh tokens
-        var tokens = tokenService.GenerateTokens(user);
+        var tokens = await tokenService.GenerateTokens(user);
 
-        return tokens;
+        return Result<TokenResponse>.Success(tokens);
     }
 }

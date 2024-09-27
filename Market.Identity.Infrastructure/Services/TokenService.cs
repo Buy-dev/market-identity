@@ -3,17 +3,16 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Market.Identity.Application.Dtos;
-using Market.Identity.Application.Repositories;
 using Market.Identity.Application.Services;
 using Market.Identity.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Market.Identity.Infrastructure.Services;
 
 public class TokenService(
-    IUserRepository userRepository,
-    IRefreshTokenRepository refreshTokenRepository,
+    IIdentityDbContext context,
     IConfiguration config)
     : ITokenService
 {
@@ -33,7 +32,7 @@ public class TokenService(
             IsRevoked = false
         };
 
-        await refreshTokenRepository.AddAsync(refreshTokenEntity);
+        await context.RefreshTokens.AddAsync(refreshTokenEntity);
 
         return new TokenResponse(accessToken, refreshToken);
     }
@@ -45,15 +44,17 @@ public class TokenService(
 
         var username = principal.Identity.Name!;
         
-        var user = await userRepository.GetUserByUsernameAsync(username);
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Username == username);
         if (user == null) return null;
 
-        var storedRefreshToken = await refreshTokenRepository.GetByTokenAsync(refreshToken);
+        var storedRefreshToken = await context
+                                       .RefreshTokens
+                                       .FirstOrDefaultAsync(r => r.Token == refreshToken);
         if (storedRefreshToken == null || storedRefreshToken.IsRevoked || storedRefreshToken.IsUsed || storedRefreshToken.Expires < DateTime.UtcNow)
             return null;
 
         storedRefreshToken.IsUsed = true;
-        await refreshTokenRepository.UpdateAsync(storedRefreshToken);
+        context.RefreshTokens.Update(storedRefreshToken);
 
         return await GenerateTokensAsync(user);
     }

@@ -9,8 +9,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<IdentityDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("IdentityDbConnection")));
+        services.AddDbContextPool<IdentityDbContext>(options =>
+            options.UseNpgsql(configuration.GetConnectionString("IdentityDbConnection")), 10);
 
         return services;
     }
