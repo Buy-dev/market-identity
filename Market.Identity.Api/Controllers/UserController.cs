@@ -1,28 +1,36 @@
-using Market.Identity.Application.Dtos;
-using Market.Identity.Application.Services;
+using Market.Identity.Application.MediatR.Commands.LoginUser;
+using Market.Identity.Application.MediatR.Commands.RefreshToken;
+using Market.Identity.Application.MediatR.Commands.RegisterUser;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Market.Identity.Controllers;
 
-public class UserController(IUserService userService, 
-                            ITokenService tokenService) : BaseController
+public class UserController : BaseController
 {
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+    public async Task<IActionResult> Login([FromBody] LoginUserCommand command, CancellationToken cancellationToken)
     {
-        var user = await userService.AuthenticateUserAsync(loginDto);
-        if (user == null) return Unauthorized();
-
-        var tokens = await tokenService.GenerateTokensAsync(user);
-        return Ok(tokens);
+        var result = await MediatR.Send(command, cancellationToken).ConfigureAwait(false);
+        return result.IsSuccess
+            ? Ok(result)
+            : StatusCode(StatusCodes.Status500InternalServerError, result);
+    }
+    
+    [HttpPost("register")]
+    public async Task<IActionResult> Login([FromBody] RegisterUserCommand command, CancellationToken cancellationToken)
+    {
+        var result = await MediatR.Send(command, cancellationToken).ConfigureAwait(false);
+        return result.IsSuccess
+            ? Ok(result)
+            : StatusCode(StatusCodes.Status500InternalServerError, result);
     }
 
     [HttpPost("refresh-token")]
-    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto request)
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenCommand command, CancellationToken cancellationToken)
     {
-        var newTokens = await tokenService.RefreshTokensAsync(request.AccessToken, request.RefreshToken);
-        if (newTokens == null) return Unauthorized();
-
-        return Ok(newTokens);
+        var result = await MediatR.Send(command, cancellationToken).ConfigureAwait(false);
+        return result.IsSuccess
+            ? Ok(result)
+            : StatusCode(StatusCodes.Status500InternalServerError, result);
     }
 }

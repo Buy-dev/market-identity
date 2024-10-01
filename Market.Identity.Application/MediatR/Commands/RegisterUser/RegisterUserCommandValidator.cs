@@ -18,6 +18,7 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
             .MustAsync(BeUniqueUsername).WithMessage("Уже существует пользователь с данным никнеймом");
 
         RuleFor(x => x.FullName)
+            .NotNull().WithMessage("ФИО обязательно")
             .MinimumLength(2).WithMessage("ФИО должно быть не менее 2 символов");
 
         RuleFor(x => x.Email)
@@ -28,6 +29,14 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
         RuleFor(x => x.CallSign)
             .MinimumLength(2).When(x => !string.IsNullOrEmpty(x.CallSign))
             .WithMessage("Позывной должен быть не менее 2 символов");
+
+        RuleFor(x => x.Password)
+            .NotNull().WithMessage("Пароль обязателен")
+            .MinimumLength(4).WithMessage("Пароль должен содержать не менее 4 символов")
+            .Must(p => p.Any(char.IsDigit)).WithMessage("Пароль должен содержать хотя бы одну цифру")
+            .Must(p => p.Any(char.IsUpper)).WithMessage("Пароль должен содержать хотя бы одну заглавную букву")
+            .Must(p => p.Any(char.IsLower)).WithMessage("Пароль должен содержать хотя бы одну строчную букву")
+            .Must(p => p.Any("!@#$%^&*()-_+=<>?".Contains)).WithMessage("Пароль должен содержать хотя бы один спецсимвол");
     }
 
     private Task<bool> BeUniqueUsername(string username, CancellationToken cancellationToken)

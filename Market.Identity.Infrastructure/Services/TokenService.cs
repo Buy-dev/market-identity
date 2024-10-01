@@ -3,6 +3,8 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Market.Identity.Application.Dtos;
+using Market.Identity.Application.Infrastructure.Mappers;
+using Market.Identity.Application.MediatR.Commands.LoginUser;
 using Market.Identity.Application.Services;
 using Market.Identity.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -13,12 +15,13 @@ namespace Market.Identity.Infrastructure.Services;
 
 public class TokenService(
     IIdentityDbContext context,
-    IConfiguration config)
+    IConfiguration config,
+    LoginUserMapper mapper)
     : ITokenService
 {
     private readonly string _secretKey = config["Jwt:Key"]!; // Secret for Access Token
 
-    public async Task<TokenResponse> GenerateTokens(User user)
+    public async Task<TokenResponse?> GenerateTokens(LoginUserDto user)
     {
         var accessToken = GenerateAccessToken(user);
 
@@ -33,47 +36,79 @@ public class TokenService(
         };
 
         await context.RefreshTokens.AddAsync(refreshTokenEntity);
+        var saveResult = await context.SaveAsync().ConfigureAwait(false);
 
-        return new TokenResponse(accessToken, refreshToken);
+        return saveResult
+            ? new TokenResponse(accessToken, refreshToken)
+            : null;
     }
 
-    public async Task<AuthResponseDto?> RefreshTokensAsync(string accessToken, string refreshToken)
+    public async Task<TokenResponse?> RefreshTokensAsync(string accessToken, string refreshToken, CancellationToken cancellationToken)
     {
         var principal = GetPrincipalFromExpiredToken(accessToken);
         if (principal?.Identity == null) return null;
 
         var username = principal.Identity.Name!;
         
-        var user = await context.Users.FirstOrDefaultAsync(u => u.Username == username);
+        var user = await context.Users
+            .AsNoTracking()
+            .Where(u => u.Username == username)
+            .Select(u => mapper.Map(u))
+            .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+            
         if (user == null) return null;
 
         var storedRefreshToken = await context
-                                       .RefreshTokens
-                                       .FirstOrDefaultAsync(r => r.Token == refreshToken);
-        if (storedRefreshToken == null || storedRefreshToken.IsRevoked || storedRefreshToken.IsUsed || storedRefreshToken.Expires < DateTime.UtcNow)
+            .RefreshTokens
+            .FirstOrDefaultAsync(r => IsValidRefreshToken(refreshToken, user.Id),
+                cancellationToken).ConfigureAwait(false);
+        if (storedRefreshToken == null)
             return null;
 
         storedRefreshToken.IsUsed = true;
         context.RefreshTokens.Update(storedRefreshToken);
+        var saveResult = await context.SaveAsync(cancellationToken).ConfigureAwait(false);
 
-        return await GenerateTokensAsync(user);
+        return saveResult
+            ? await GenerateTokens(user)
+            : null;
+    }
+    
+    private bool IsValidRefreshToken(string refreshToken, long userId)
+    {
+        return context.RefreshTokens.Any(r => r.Token == refreshToken && r.UserId == userId
+            && (!r.IsUsed || !r.IsRevoked || r.Expires < DateTime.Now));
     }
 
-    private string GenerateAccessToken(User user)
+    private string GenerateAccessToken(LoginUserDto user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_secretKey);
+        
+        var claims = GetClaims(user);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity([
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Email, user.Email)
-            ]),
-            Expires = DateTime.UtcNow.AddMinutes(15), // Access token valid for 15 minutes
+            Subject = claims,
+            Expires = DateTime.UtcNow.AddMinutes(15),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
+    }
+
+    private ClaimsIdentity GetClaims(LoginUserDto user)
+    {
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Name, user.Username),
+        };
+
+        foreach (var role in user.Roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+
+        return new ClaimsIdentity(claims);
     }
 
     private string GenerateRefreshToken()
@@ -95,7 +130,7 @@ public class TokenService(
             IssuerSigningKey = new SymmetricSecurityKey(key),
             ValidateIssuer = false,
             ValidateAudience = false,
-            ValidateLifetime = false // Important: don't validate expiration
+            ValidateLifetime = false
         };
 
         var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);

@@ -6,28 +6,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Market.Identity.Application.MediatR.Commands.RegisterUser;
 
-public class RegisterUserCommand : IRequest<Result<object>>
+public record RegisterUserCommand : IRequest<Result<object>>
 {
-    public string Username { get; set; }
-    public string FullName { get; set; }
-    public string CallSign { get; set; }
-    public string Email { get; set; }
-    public string Password { get; set; }
+    public string Username { get; init; }
+    public string FullName { get; init; }
+    public string CallSign { get; init; }
+    public string Email { get; init; }
+    public string Password { get; init; }
 }
 
 public class RegisterUserCommandHandler(IIdentityDbContext context,
-                                        IPasswordHasher<User> passwordHasher, 
-                                        IEmailService emailService) 
+                                        IPasswordHasher<User> passwordHasher) 
     : IRequestHandler<RegisterUserCommand, Result<object>>
 {
     public async Task<Result<object>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        var existingUser = await context.Users
-            .FirstOrDefaultAsync(x => x.Email == request.Email || x.Username == request.Username, cancellationToken);
-        
-        if(existingUser != null)
-            return Result<object>.Failure("User with this email or username already exists");
-        
         var user = new User
         {
             Email = request.Email,
@@ -38,22 +31,10 @@ public class RegisterUserCommandHandler(IIdentityDbContext context,
         };
 
         context.Users.Add(user);
-        var saveResult = await context.SaveAsync(cancellationToken);
+        var isSaveSuccess = await context.SaveAsync(cancellationToken).ConfigureAwait(false);
         
-        if(!saveResult)
-            return Result<object>.Failure("Не удалось создать пользователя");
-
-        // Send email confirmation
-        var confirmationToken = GenerateEmailConfirmationToken(user);
-        await _emailService.SendEmailAsync(user.Email, "Confirm your account", $"Confirm token: {confirmationToken}");
-
-        return Result<object>.Success();
-    }
-    
-    private string GenerateEmailConfirmationToken(User user)
-    {
-        Random rnd = new Random();
-        var code = rnd.Next(10000, 99999);
-        return code.ToString();
+        return !isSaveSuccess 
+            ? Result<object>.Failure("Не удалось создать пользователя") 
+            : Result<object>.Success();
     }
 }

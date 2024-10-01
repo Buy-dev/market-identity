@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Market.Identity.Controllers;
@@ -6,5 +7,5 @@ namespace Market.Identity.Controllers;
 [Route("api/[controller]")]
 public class BaseController : ControllerBase
 {
-    
+    protected IMediator MediatR  => (IMediator)HttpContext.RequestServices.GetService(typeof(IMediator));
 }

@@ -10,7 +10,7 @@ public class CustomResultFactory : IFluentValidationAutoValidationResultFactory
 {
     public IActionResult CreateActionResult(ActionExecutingContext context, ValidationProblemDetails? validationProblemDetails)
     {
-        var validationErrors = validationProblemDetails!.Errors.Select(e => new ValidationError()
+        var validationErrors = validationProblemDetails!.Errors.Select(e => new ValidationError
         {
             PropertyName = e.Key,
             Message = string.Join(", ", e.Value)

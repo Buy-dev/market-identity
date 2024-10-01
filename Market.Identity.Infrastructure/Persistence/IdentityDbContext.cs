@@ -16,6 +16,26 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : Db
     public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<UserRole>()
+            .HasKey(ur => new { ur.UserId, ur.RoleId });
+
+        modelBuilder.Entity<UserRole>()
+            .HasOne(ur => ur.User)
+            .WithMany(u => u.UserRoles)
+            .HasForeignKey(ur => ur.UserId);
+
+        modelBuilder.Entity<UserRole>()
+            .HasOne(ur => ur.Role)
+            .WithMany()
+            .HasForeignKey(ur => ur.RoleId);
+        
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Username)
+            .IsUnique();
+    }
+    
     public async Task<bool> SaveAsync(CancellationToken cancellationToken = default)
     {
         var userId = Guid.Empty;
@@ -52,22 +72,5 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : Db
         {
             return false;
         }
-    }
-    
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<UserRole>()
-                    .HasKey(ur => new { ur.UserId, ur.RoleId });
-
-        modelBuilder.Entity<UserRole>()
-                    .HasOne(ur => ur.User)
-                    .WithMany(u => u.UserRoles)
-                    .HasForeignKey(ur => ur.UserId);
-
-        modelBuilder.Entity<UserRole>()
-                    .HasOne(ur => ur.Role)
-                    .WithMany()
-                    .HasForeignKey(ur => ur.RoleId);
     }
 }

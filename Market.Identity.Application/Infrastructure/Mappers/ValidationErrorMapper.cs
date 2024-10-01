@@ -5,12 +5,12 @@ namespace Market.Identity.Application.Infrastructure.Mappers;
 
 public class ValidationErrorMapper : IMapWith<ValidationFailure, ValidationError>
 {
-    public ValidationError Map(ValidationFailure source)
+    public ValidationError Map(ValidationFailure user)
     {
         return new ValidationError
         {
-            PropertyName = source.PropertyName,
-            Message = source.ErrorMessage
+            PropertyName = user.PropertyName,
+            Message = user.ErrorMessage
         };
     }
 }
