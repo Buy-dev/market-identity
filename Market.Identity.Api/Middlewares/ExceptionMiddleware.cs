@@ -4,7 +4,7 @@ using Market.Identity.Application;
 
 namespace Market.Identity.Middlewares;
 
-public class ExceptionMiddleware : IMiddleware
+public class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger) : IMiddleware
 {
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
@@ -14,6 +14,7 @@ public class ExceptionMiddleware : IMiddleware
         }
         catch (Exception e)
         {
+            logger.LogError(e, "Произошла неожиданная ошибка");
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             context.Response.ContentType = "application/json";
             

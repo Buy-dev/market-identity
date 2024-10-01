@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using Market.Identity.Application;
 using Market.Identity.Application.Services;
 using Market.Identity.Domain.Entities;
 using Market.Identity.Domain.Entities.Common;
