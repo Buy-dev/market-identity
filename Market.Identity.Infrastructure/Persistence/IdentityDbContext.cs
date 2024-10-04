@@ -27,7 +27,7 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : Db
 
         modelBuilder.Entity<UserRole>()
             .HasOne(ur => ur.Role)
-            .WithMany()
+            .WithMany(u => u.UserRoles)
             .HasForeignKey(ur => ur.RoleId);
         
         modelBuilder.Entity<User>()
@@ -67,7 +67,7 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : Db
             await base.SaveChangesAsync(cancellationToken);
             return true;
         }
-        catch
+        catch(Exception e)
         {
             return false;
         }

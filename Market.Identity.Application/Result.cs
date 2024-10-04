@@ -7,7 +7,7 @@ public class Result<TData>(bool isSuccess,
 {
     public bool IsSuccess { get; set; } = isSuccess;
     public List<string>? Errors { get; set; } = errors;
-    public List<ValidationError> ValidationErrors { get; set; } = new();
+    public List<ValidationError>? ValidationErrors { get; set; } = validationErrors;
     public TData? Data { get; set; } = data;
 
     public static Result<TData> Success(TData data) => new(true, null, null, data);
