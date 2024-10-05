@@ -3,6 +3,8 @@ namespace Market.Identity.Application;
 public enum Roles
 {
     Admin,
-    Seller,
-    Buyer
+    Customer,
+    ShopOwner,
+    ShopWorker,
+    CountryBuyer,
 }

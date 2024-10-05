@@ -17,22 +17,9 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : Db
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<UserRole>()
-            .HasKey(ur => new { ur.UserId, ur.RoleId });
-
-        modelBuilder.Entity<UserRole>()
-            .HasOne(ur => ur.User)
-            .WithMany(u => u.UserRoles)
-            .HasForeignKey(ur => ur.UserId);
-
-        modelBuilder.Entity<UserRole>()
-            .HasOne(ur => ur.Role)
-            .WithMany(u => u.UserRoles)
-            .HasForeignKey(ur => ur.RoleId);
-        
-        modelBuilder.Entity<User>()
-            .HasIndex(u => u.Username)
-            .IsUnique();
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(IdentityDbContext).Assembly);
+        modelBuilder.SeedRoles();
     }
     
     public async Task<bool> SaveAsync(CancellationToken cancellationToken = default)
@@ -52,12 +39,12 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : Db
             {
                 case EntityState.Added:
                     entry.Entity.CreatedBy = userId;
-                    entry.Entity.Created = DateTime.Now;
+                    entry.Entity.Created = DateTime.UtcNow;
                     break;
 
                 case EntityState.Modified:
                     entry.Entity.ModifiedBy = userId;
-                    entry.Entity.Modified = DateTime.Now;
+                    entry.Entity.Modified = DateTime.UtcNow;
                     break;
             }
         }

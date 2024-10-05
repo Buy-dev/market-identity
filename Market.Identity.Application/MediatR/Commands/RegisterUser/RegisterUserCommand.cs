@@ -33,7 +33,7 @@ public class RegisterUserCommandHandler(IIdentityDbContext context,
         context.Users.Add(user);
         var isSaveSuccess = await context.SaveAsync(cancellationToken).ConfigureAwait(false);
         
-        return !isSaveSuccess 
+        return !isSaveSuccess
             ? Result<object>.Failure("Не удалось создать пользователя") 
             : Result<object>.Success();
     }

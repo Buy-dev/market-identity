@@ -13,16 +13,16 @@ public class UserController : BaseController
         var result = await MediatR.Send(command, cancellationToken).ConfigureAwait(false);
         return result.IsSuccess
             ? Ok(result)
-            : StatusCode(StatusCodes.Status500InternalServerError, result);
+            : BadRequest(result);
     }
     
     [HttpPost("register")]
-    public async Task<IActionResult> Login([FromBody] RegisterUserCommand command, CancellationToken cancellationToken)
+    public async Task<IActionResult> Register([FromBody] RegisterUserCommand command, CancellationToken cancellationToken)
     {
         var result = await MediatR.Send(command, cancellationToken).ConfigureAwait(false);
         return result.IsSuccess
             ? Ok(result)
-            : StatusCode(StatusCodes.Status500InternalServerError, result);
+            : BadRequest(result);
     }
 
     [HttpPost("refresh-token")]
@@ -31,6 +31,8 @@ public class UserController : BaseController
         var result = await MediatR.Send(command, cancellationToken).ConfigureAwait(false);
         return result.IsSuccess
             ? Ok(result)
-            : StatusCode(StatusCodes.Status500InternalServerError, result);
+            : Unauthorized(result);
     }
+    
+    
 }
