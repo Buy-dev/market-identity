@@ -1,7 +1,5 @@
 using System.Reflection;
 using FluentValidation;
-using FluentValidation.Results;
-using Market.Identity.Application.Helpers;
 using Market.Identity.Application.Infrastructure.Mappers;
 using Market.Identity.Application.Infrastructure.Validation;
 using Market.Identity.Domain.Entities;
@@ -31,8 +29,24 @@ public static class DependencyInjection
                     configuration.OverrideDefaultResultFactoryWith<CustomResultFactory>();
                 })
                 .AddMappers()
-                .AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();;
+                .AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         
+        return services;
+    }
+
+    private static IServiceCollection AddGenericService(this IServiceCollection services, Type type)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var a = assembly.GetTypes();
+        var mappers = assembly.GetTypes()
+            .Where(type => type.IsClass && !type.IsAbstract && type.GetInterfaces()
+                .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMapWith<,>)));
+
+        foreach (var mapper in mappers)
+        {
+            services.AddScoped(mapper);
+        }
+
         return services;
     }
     

@@ -4,7 +4,6 @@ using Market.Identity.Application.Services;
 using Market.Identity.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace Market.Identity.Application.MediatR.Commands.LoginUser;
 
@@ -18,19 +17,15 @@ public class LoginUserCommandHandler(
     IIdentityDbContext context,
     IPasswordHasher<User> passwordHasher,
     ITokenService tokenService,
-    LoginUserMapper mapper)
+    UserMapper mapper,
+    IRepository<User> userRepository)
     : IRequestHandler<LoginUserCommand, Result<TokenResponse>>
 {
     public async Task<Result<TokenResponse>> Handle(LoginUserCommand request, CancellationToken cancellationToken)
     {
-        var user = await context
-                         .Users
-                         .AsNoTracking()
-                         .Include(u => u.UserRoles)
-                         .ThenInclude(ur => ur.Role)
-                         .Where(u => u.Username == request.Username)
-                         .Select(user => mapper.Map(user))
-                         .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        var user = await userRepository
+            .GetByAndMapAsync(u => u.Username == request.Username, mapper, cancellationToken)
+            .ConfigureAwait(false);
         
         var hashingResult = passwordHasher.VerifyHashedPassword(null, user!.PasswordHash, request.Password);
         if (hashingResult == PasswordVerificationResult.Failed)

@@ -1,5 +1,4 @@
 using FluentValidation.Results;
-using Market.Identity.Application.Helpers;
 
 namespace Market.Identity.Application.Infrastructure.Mappers;
 

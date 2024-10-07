@@ -59,4 +59,11 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : Db
             return false;
         }
     }
+
+    public void AttachEntityIfNeeded<T>(T entity) where T : class
+    {
+        var entityEntry = Entry(entity);
+        if(entityEntry.State == EntityState.Detached)
+            Set<T>().Attach(entity);
+    }
 }

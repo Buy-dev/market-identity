@@ -11,4 +11,8 @@ public interface IIdentityDbContext
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     
     public Task<bool> SaveAsync(CancellationToken cancellationToken = default);
+    
+    public void AttachEntityIfNeeded<T>(T entity) where T : class;
+    
+    public DbSet<T> Set<T>() where T : class;
 }

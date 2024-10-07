@@ -2,7 +2,6 @@ using Market.Identity.Application.Services;
 using Market.Identity.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace Market.Identity.Application.MediatR.Commands.RegisterUser;
 

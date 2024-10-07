@@ -1,6 +1,8 @@
 using Market.Identity.Application.MediatR.Commands.LoginUser;
 using Market.Identity.Application.MediatR.Commands.RefreshToken;
 using Market.Identity.Application.MediatR.Commands.RegisterUser;
+using Market.Identity.Application.MediatR.Queries.GetRolesTree;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Market.Identity.Controllers;
@@ -34,5 +36,12 @@ public class UserController : BaseController
             : Unauthorized(result);
     }
     
-    
+    [Authorize]
+    [HttpGet("roles-tree")]
+    public async Task<IActionResult> GetRolesTree(CancellationToken cancellationToken)
+    {
+        var result = await MediatR.Send(new GetRolesTreeQuery(), cancellationToken)
+            .ConfigureAwait(false);
+        return Ok(result);
+    }
 }
