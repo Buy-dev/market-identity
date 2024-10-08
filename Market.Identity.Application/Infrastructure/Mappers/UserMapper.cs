@@ -11,7 +11,7 @@ public class UserMapper : IMapWith<User, UserDto>
             user.Id, 
             user.Username, 
             user.PasswordHash, 
-            user.UserRoles.Select(ur => ur.Role.Name).ToList()
+            user.UserRoles?.Select(ur => ur.Role.Name).ToList()
         );
     }
 }

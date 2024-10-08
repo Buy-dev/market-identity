@@ -1,5 +1,6 @@
 using System.Reflection;
 using Market.Identity.Application.Services;
+using Market.Identity.Domain.Entities;
 using Market.Identity.Infrastructure.Persistence;
 using Market.Identity.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -12,26 +13,39 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContextPool<IIdentityDbContext, IdentityDbContext>(options =>
-                options.UseNpgsql(configuration.GetConnectionString("IdentityDbConnection")), 10)
+        services
             .AddScoped<ITokenService, TokenService>()
-            .AddRepositories();
+            .AddScoped(typeof(IRepository<>), typeof(Repository<>))
+            .AddScoped<ICurrentUserService, CurrentUserService>()
+            .AddDbContextPool<IIdentityDbContext, IdentityDbContext>(options =>
+                options.UseNpgsql(configuration.GetConnectionString("IdentityDbConnection")), 10);
 
         return services;
     }
-
-    private static IServiceCollection AddRepositories(this IServiceCollection services)
+    
+    private static void RegisterRepositories(this IServiceCollection services)
     {
-        var types = Assembly.GetExecutingAssembly()
-            .GetTypes();
-        var repositoryInterfaces = types.Where(t => t is { IsInterface: true, Name: "IRepository`1" });
-        foreach (var repositoryInterface in repositoryInterfaces)
-        {
-            var entityType = repositoryInterface.GetGenericArguments().First();
-            var implementationType = typeof(Repository<>).MakeGenericType(entityType);
-            services.AddScoped(repositoryInterface, implementationType);
-        }
+        var repositoryInterfaceType = typeof(IRepository<>);
+        var repositoryImplementationType = typeof(Repository<>);
 
-        return services;
+        var assembly = Assembly.GetExecutingAssembly();
+        var types = assembly.GetTypes();
+
+        foreach (var type in types)
+        {
+            if (!type.IsClass || type.IsAbstract)
+                continue;
+
+            var interfaces = type.GetInterfaces();
+            foreach (var @interface in interfaces)
+            {
+                if (@interface.IsGenericType && @interface.GetGenericTypeDefinition() == repositoryInterfaceType)
+                {
+                    var entityType = @interface.GetGenericArguments()[0];
+                    var implementationType = repositoryImplementationType.MakeGenericType(entityType);
+                    services.AddScoped(@interface, implementationType);
+                }
+            }
+        }
     }
 }

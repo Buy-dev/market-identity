@@ -50,12 +50,9 @@ public class AssignRoleToMeCommandValidator : BaseValidator<AssignRoleToMeComman
             .AnyAsync(ur => ur.UserId == user.Id && ur.RoleId == context.InstanceToValidate.RoleId, cancellation)
             .ConfigureAwait(false);
 
-        if (!isRelationPresent)
-            return GenerateValidationResultWithFailure(validationResult, "Роль уже назначена");
-
-        context.RootContextData["User"] = user;
-
-        return validationResult;
+        return isRelationPresent 
+            ? GenerateValidationResultWithFailure(validationResult, "Роль уже назначена") 
+            : validationResult;
     }
 
     private Task<bool> BeExistingRole(long roleId, CancellationToken cancellationToken)

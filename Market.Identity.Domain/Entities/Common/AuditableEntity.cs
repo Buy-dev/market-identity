@@ -1,6 +1,6 @@
 namespace Market.Identity.Domain.Entities.Common;
 
-public class AuditableEntity : BaseEntity
+public abstract class AuditableEntity : BaseEntity
 {
     public DateTime Created { get; set; }
     public Guid CreatedBy { get; set; }

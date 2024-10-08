@@ -8,25 +8,31 @@ using Microsoft.AspNetCore.Http;
 
 namespace Market.Identity.Application.MediatR.Commands.AssignRole.AssignRoleToMe;
 
-public class AssignRoleToMeCommand : IRequest<Result<string>>
+public class AssignRoleToMeCommand : IRequest<Result<object>>
 {
     public long RoleId { get; set; }
 }
 
 public class AssignRoleToMeCommandHandler(
-    IIdentityDbContext dbContext,
-    ShortenUserMapper mapper,
-    ValidationContext<AssignRoleToMeCommand> validationContext)
-    : IRequestHandler<AssignRoleToMeCommand, Result<string>>
+    IRepository<UserRole> userRoleRepository,
+    IRepository<User> userRepository,
+    ICurrentUserService currentUserService,
+    ShortenUserMapper mapper)
+    : IRequestHandler<AssignRoleToMeCommand, Result<object>>
 {
-    public async Task<Result<string>> Handle(AssignRoleToMeCommand request, CancellationToken cancellationToken)
+    public async Task<Result<object>> Handle(AssignRoleToMeCommand request, CancellationToken cancellationToken)
     {
-        var user = validationContext.RootContextData["User"] as ShortenUserDto;
-        var userRole = new UserRole()
+        var user = await userRepository
+            .GetByAndMapAsync(u => u.Username == currentUserService.Username, mapper, cancellationToken)
+            .ConfigureAwait(false);
+        var userRole = new UserRole
         {
-            UserId = user.Id
-        }
+            UserId = user.Id,
+            RoleId = request.RoleId
+        };
 
-        return Result<string>.Success("Role assigned successfully");
+        await userRoleRepository.AddAsync(userRole, cancellationToken);
+
+        return Result<object>.Success();
     }
 }

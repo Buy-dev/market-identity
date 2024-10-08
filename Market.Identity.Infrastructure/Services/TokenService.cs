@@ -16,8 +16,8 @@ namespace Market.Identity.Infrastructure.Services;
 public class TokenService(
     IConfiguration config,
     UserMapper mapper,
-    Repository<User> userRepository,
-    Repository<RefreshToken> refreshTokenRepository)
+    IRepository<User> userRepository,
+    IRepository<RefreshToken> refreshTokenRepository)
     : ITokenService
 {
     private readonly string _secretKey = config["Jwt:Secret"]!;
@@ -26,10 +26,10 @@ public class TokenService(
     private readonly string _validAudience = config["Jwt:ValidAudience"]!;
     private readonly string _validIssuer = config["Jwt:ValidIssuer"]!;
     
-    public async Task<TokenResponse?> GenerateTokens(UserDto user)
+    public async Task<TokenResponse> GenerateTokens(UserDto user)
     {
         var accessToken = GenerateAccessToken(user);
-        var refreshToken =  await GenerateRefreshToken(user.Id);
+        var refreshToken = await GenerateRefreshToken(user.Id);
 
         return new TokenResponse(accessToken, refreshToken.Token);
     }
@@ -99,6 +99,8 @@ public class TokenService(
         {
             new(ClaimTypes.Name, user.Username),
         };
+        
+        if(user.Roles == null) return new ClaimsIdentity(claims);
 
         foreach (var role in user.Roles)
         {
