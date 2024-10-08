@@ -5,6 +5,10 @@ namespace Market.Identity.Application.Services;
 
 public interface IRepository<TEntity>
 {
+    Task<bool> AnyAsync(
+        Expression<Func<TEntity, bool>> predicate, 
+        CancellationToken cancellationToken);
+    
     Task<TEntity?> GetByAsync(
         Expression<Func<TEntity, bool>> predicate, 
         CancellationToken cancellationToken);

@@ -4,22 +4,27 @@ using Market.Identity.Application.Infrastructure.Mappers;
 using Market.Identity.Application.Infrastructure.Validation;
 using Market.Identity.Application.Services;
 using Market.Identity.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace Market.Identity.Application.MediatR.Commands.AssignRole.AssignRoleToMe;
 
 public class AssignRoleToMeCommandValidator : BaseValidator<AssignRoleToMeCommand>
 {
-    private readonly IIdentityDbContext _dbContext;
     private readonly ICurrentUserService _currentUserService;
     private readonly ShortenUserMapper _mapper;
+    private readonly IRepository<User> _userRepository;
+    private readonly IRepository<UserRole> _userRoleRepository;
+    private readonly IRepository<Role> _roleRepository;
 
     public AssignRoleToMeCommandValidator(
-        IIdentityDbContext dbContext,
+        IRepository<User> userRepository,
+        IRepository<UserRole> userRoleRepository,
+        IRepository<Role> roleRepository,
         ICurrentUserService currentUserService,
         ShortenUserMapper mapper)
     {
-        _dbContext = dbContext;
+        _userRepository = userRepository;
+        _userRoleRepository = userRoleRepository;
+        _roleRepository = roleRepository;
         _currentUserService = currentUserService;
         _mapper = mapper;
 
@@ -34,18 +39,16 @@ public class AssignRoleToMeCommandValidator : BaseValidator<AssignRoleToMeComman
     {
         var validationResult = await base.ValidateAsync(context, cancellation) 
                                ?? new ValidationResult();
-        var user = await _dbContext.Users
-            .AsNoTracking()
-            .Where(u => u.Username == _currentUserService.Username)
-            .Select(u => _mapper.Map(u))
-            .FirstOrDefaultAsync(cancellation).ConfigureAwait(false);
-
-        if (user == null) 
-            return GenerateValidationResultWithFailure(validationResult, "Пользователь не найден")
+        var user = await _userRepository
+            .GetByAndMapAsync(u => u.Username == _currentUserService.Username, _mapper, cancellation)
+            .ConfigureAwait(false);
         
-        var isRelationPresent = _dbContext.UserRoles
-            .AsNoTracking()
-            .Any(ur => ur.UserId == user.Id && ur.RoleId == context.InstanceToValidate.RoleId);
+        if (user == null)
+            return GenerateValidationResultWithFailure(validationResult, "Пользователь не найден");
+        
+        var isRelationPresent = await _userRoleRepository
+            .AnyAsync(ur => ur.UserId == user.Id && ur.RoleId == context.InstanceToValidate.RoleId, cancellation)
+            .ConfigureAwait(false);
 
         if (!isRelationPresent)
             return GenerateValidationResultWithFailure(validationResult, "Роль уже назначена");
@@ -56,6 +59,6 @@ public class AssignRoleToMeCommandValidator : BaseValidator<AssignRoleToMeComman
     }
 
     private Task<bool> BeExistingRole(long roleId, CancellationToken cancellationToken)
-        => _dbContext.Roles.AsNoTracking()
-            .AnyAsync(u => u.Id == roleId, cancellationToken);
+        => _roleRepository
+        .AnyAsync(u => u.Id == roleId, cancellationToken);
 }

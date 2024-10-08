@@ -19,6 +19,13 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
         _dbContext = dbContext;
     }
 
+    public Task<bool> AnyAsync(
+        Expression<Func<TEntity, bool>> predicate, 
+        CancellationToken cancellationToken)
+        => _dbContext.Set<TEntity>()
+                .AsNoTracking()
+                .AnyAsync(predicate, cancellationToken);
+
     public Task<TEntity?> GetByAsync(
         Expression<Func<TEntity, bool>> predicate, 
         CancellationToken cancellationToken)
