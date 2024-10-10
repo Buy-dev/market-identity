@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Grpc.AspNetCore" Version="2.66.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
           <PrivateAssets>all</PrivateAssets>
@@ -22,6 +23,11 @@
     <ItemGroup>
       <ProjectReference Include="..\Market.Identity.Application\Market.Identity.Application.csproj" />
       <ProjectReference Include="..\Market.Identity.Infrastructure\Market.Identity.Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Protobuf Include="Proto\auth.proto" GrpcServices="Server" />
+        <Protobuf Include="Proto\role.proto" GrpcServices="Server" />
     </ItemGroup>
 
 </Project>

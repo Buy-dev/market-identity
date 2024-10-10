@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+option csharp_namespace = "Market.Identity.Grpc";
+
+package market.identity;
+
+// The AuthService definition.
+service AuthGrpc {
+  rpc Login (LoginUserCommand) returns (LoginResponse);
+  rpc Register (RegisterUserCommand) returns (RegisterResponse);
+  rpc RefreshToken (RefreshTokenCommand) returns (RefreshTokenResponse);
+}
+
+// The request message containing the login details.
+message LoginUserCommand {
+  string username = 1;
+  string password = 2;
+}
+
+// The request message containing the registration details.
+message RegisterUserCommand {
+  string username = 1;
+  string fullName = 2;
+  string callSign = 3;
+  string email = 4;
+  string password = 5;
+}
+
+// The request message containing the refresh token details.
+message RefreshTokenCommand {
+  string accessToken = 1;
+  string refreshToken = 2;
+}
+
+// The response message for login.
+message LoginResponse {
+  bool isSuccess = 1;
+  string message = 2;
+  string token = 3;
+  string refreshToken = 4;
+}
+
+// The response message for registration.
+message RegisterResponse {
+  bool isSuccess = 1;
+  string message = 2;
+}
+
+// The response message for refresh token.
+message RefreshTokenResponse {
+  bool isSuccess = 1;
+  string message = 2;
+  string newToken = 3;
+  string newRefreshToken = 4;
+}

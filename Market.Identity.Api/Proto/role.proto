@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+option csharp_namespace = "Market.Identity.Grpc";
+
+package market.identity;
+
+// The RoleService definition.
+service RoleService {
+  rpc GetRolesTree (GetRolesTreeRequest) returns (GetRolesTreeResponse);
+  rpc AssignRoleToMe (AssignRoleToMeCommand) returns (AssignRoleToMeResponse);
+}
+
+// The request message for getting roles tree.
+message GetRolesTreeRequest {}
+
+// The response message for getting roles tree.
+message GetRolesTreeResponse {
+  repeated RoleGroup roleGroups = 1;
+}
+
+// The request message for assigning a role to the user.
+message AssignRoleToMeCommand {
+  string roleId = 1;
+}
+
+// The response message for assigning a role to the user.
+message AssignRoleToMeResponse {
+  bool isSuccess = 1;
+  string message = 2;
+}
+
+// The role group message.
+message RoleGroup {
+  string parentName = 1;
+  repeated Role roles = 2;
+}
+
+// The role message.
+message Role {
+  int64 id = 1;
+  string title = 2;
+  string description = 3;
+}
