@@ -6,19 +6,19 @@ package market.identity;
 
 // The AuthService definition.
 service AuthGrpc {
-  rpc Login (LoginUserCommand) returns (LoginResponse);
-  rpc Register (RegisterUserCommand) returns (RegisterResponse);
-  rpc RefreshToken (RefreshTokenCommand) returns (RefreshTokenResponse);
+  rpc Login (LoginUserRequest) returns (LoginResponse);
+  rpc Register (RegisterUserRequest) returns (RegisterResponse);
+  rpc RefreshToken (RefreshTokenRequest) returns (RefreshTokenResponse);
 }
 
 // The request message containing the login details.
-message LoginUserCommand {
+message LoginUserRequest {
   string username = 1;
   string password = 2;
 }
 
 // The request message containing the registration details.
-message RegisterUserCommand {
+message RegisterUserRequest {
   string username = 1;
   string fullName = 2;
   string callSign = 3;
@@ -27,7 +27,7 @@ message RegisterUserCommand {
 }
 
 // The request message containing the refresh token details.
-message RefreshTokenCommand {
+message RefreshTokenRequest {
   string accessToken = 1;
   string refreshToken = 2;
 }
